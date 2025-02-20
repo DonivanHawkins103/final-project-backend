@@ -1,12 +1,14 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
+const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
+app.use(cors());
 
 const COURSES_FILE = path.join(__dirname, "savedCourses.json");
 
@@ -66,6 +68,43 @@ app.delete("/api/remove-course/:id", (req, res) => {
     writeSavedCourses(savedCourses);
     res.json({ message: "Course removed successfully" });
 });
+
+app.post("/api/add-course", (req, res) => {
+    const { name, description } = req.body;
+
+    // Ensure course name and description are provided
+    if (!name || !description) {
+        return res.status(400).json({ message: "Name and description are required" });
+    }
+
+    // Create a new course object
+    const newCourse = {
+        id: courses.length + 1,  // Create a new unique ID for the course
+        name,
+        description
+    };
+
+    // Add the new course to the array
+    courses.push(newCourse);
+
+    // Respond with the newly added course
+    res.status(201).json(newCourse);
+});
+
+// DELETE route to remove a course
+app.delete("/api/courses/:id", (req, res) => {
+    const { id } = req.params;
+    const index = courses.findIndex(course => course.id === parseInt(id));
+
+    if (index === -1) {
+        return res.status(404).json({ message: "Course not found" });
+    }
+
+    // Remove the course from the array
+    courses.splice(index, 1);
+    res.status(200).json({ message: "Course deleted successfully" });
+});
+
 
 // Start server
 app.listen(PORT, () => {
