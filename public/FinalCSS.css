@@ -1,0 +1,147 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f0f0f0;
+    color: #333333;
+    margin: 0;
+    padding: 0;
+}
+
+p {
+    max-width: 600px;
+    background: white;
+    padding: 15px 20px;
+    margin: 20px auto;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    font-size: 18px;
+    line-height: 1.6;
+    color: #333;
+}
+
+h1, h2 {
+    font-weight: 600;
+}
+
+p, ul li, a {
+    font-weight: 400;
+}
+
+header {
+    background: #3a3a3a;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+header h1 a {
+    text-decoration: none;
+    color: white;
+    transition: 0.3s;
+}
+
+header h1 a:hover {
+    color: #dcdcdc;
+}
+
+#navbar {
+    background: #4a4a4a;
+    padding: 10px 0;
+    text-align: center;
+}
+
+#navbar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#navbar ul li {
+    display: inline;
+    margin: 0 15px;
+}
+
+#navbar ul li a {
+    text-decoration: none;
+    color: white;
+    font-size: 18px;
+    padding: 10px 15px;
+    transition: 0.3s;
+}
+
+#navbar ul li a:hover {
+    background: #5a5a5a;
+    border-radius: 5px;
+}
+
+ul {
+    list-style: none;
+    padding: 20px;
+    text-align: center;
+}
+
+ul li {
+    display: inline-block;
+    margin: 10px;
+}
+
+ul li a {
+    text-decoration: none;
+    background: #3d3d3d;
+    color: white;
+    padding: 12px 18px;
+    font-size: 18px;
+    border-radius: 5px;
+    transition: 0.3s;
+}
+
+ul li a:hover {
+    background: #5d5d5d;
+}
+
+.course-section {
+    display: block;
+    background: white;
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    border-left: 5px solid #666;
+}
+
+.course-section.active {
+    display: block;
+}
+
+.course-section h2 {
+    color: #444;
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+    header {
+        font-size: 20px;
+        padding: 15px;
+    }
+
+    ul li {
+        display: block;
+        margin: 10px 0;
+    }
+
+    ul li a {
+        width: 80%;
+        display: block;
+        text-align: center;
+    }
+
+    .course-section {
+        width: 90%;
+        padding: 15px;
+    }
+}
