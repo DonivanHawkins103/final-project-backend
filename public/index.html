@@ -36,7 +36,7 @@
     <script>
         async function fetchCourses() {
             try {
-                const response = await fetch("http://localhost:5000/api/courses");
+                const response = await fetch("https://resisted-shine-ringer.glitch.me/api/courses");
                 const courses = await response.json();
                 const container = document.getElementById("course-list");
                 container.innerHTML = "";
@@ -57,35 +57,49 @@
             }
         }
 
-        async function addCourse(name, description) {
-            const response = await fetch("/api/add-course", {
+        async function addCourse(event) {
+            event.preventDefault();  // Prevent form from reloading page
+
+            const name = document.getElementById("course-name").value;
+            const description = document.getElementById("course-description").value;
+
+            const response = await fetch("https://resisted-shine-ringer.glitch.me/api/add-course", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ name, description })
             });
-            
+
             if (response.ok) {
                 alert(`${name} added to your courses!`);
+                fetchCourses();  // Refresh the course list after adding
             } else {
                 alert("Failed to add course.");
             }
         }
 
         async function deleteCourse(id) {
-            const response = await fetch(`http://localhost:5000/api/courses/${id}`, {
-                method: "DELETE"
-            });
+            try {
+                const response = await fetch(`https://resisted-shine-ringer.glitch.me/api/courses/${id}`, {
+                    method: "DELETE"
+                });
 
-            if (response.ok) {
-                fetchCourses(); // Refresh course list
+                if (response.ok) {
+                    alert("Course deleted successfully!");
+                    fetchCourses(); // Refresh course list after deletion
+                } else {
+                    alert("Failed to delete course.");
+                }
+            } catch (error) {
+                console.error("Error deleting course:", error);
+                alert("An error occurred while deleting the course.");
             }
         }
 
         async function saveCourse(id) {
-            const response = await fetch(`http://localhost:5000/api/courses/${id}`);
+            const response = await fetch(`https://resisted-shine-ringer.glitch.me/api/courses/${id}`);
             const course = await response.json();
 
-            await fetch("http://localhost:5000/api/save-course", {
+            await fetch("https://resisted-shine-ringer.glitch.me/api/save-course", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(course)
