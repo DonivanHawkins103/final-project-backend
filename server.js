@@ -276,6 +276,9 @@ app.get("/api/profile", (req, res) => {
 app.post('/api/login', async (req, res) => {
     const { username, password, role } = req.body;
 
+    // Read users from file to ensure the latest data is used
+    let users = readUsersFromFile();  
+
     // Find the user in the JSON file
     const user = users.find(user => user.username === username);
 
@@ -283,21 +286,23 @@ app.post('/api/login', async (req, res) => {
         return res.status(404).json({ message: 'User not found' });
     }
 
-    // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-        return res.status(401).json({ message: 'Invalid credentials' });
+    try {
+        // Verify password
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // Check if the selected role matches the user's actual role
+        if (user.role !== role) {
+            return res.status(403).json({ message: `Invalid role selection for ${username}` });
+        }
+
+        res.json({ message: 'Login successful', role: user.role });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
-
-    // Check if the selected role matches the user's actual role
-    if (user.role !== role) {
-        return res.status(403).json({ message: `Invalid role selection for ${username}` });
-    }
-
-    // Generate JWT Token
-    const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, SECRET_KEY, { expiresIn: '1h' });
-
-    res.json({ message: 'Login successful', token, role: user.role });
 });
 
 // function verifyTeacherRole(req, res, next) {
