@@ -12,53 +12,92 @@
     <header>
         <h1><a href="index.html">Courses For College</a></h1>
     </header>
-    
-    <div id="navbar">
+
+    <main>
         <nav>
             <ul>
                 <li><a href="index.html">Home</a></li>
                 <li><a href="about.html">About</a></li>
                 <li><a href="courses.html">Your Courses</a></li>
+                <li><a href="login.html">Log In</a></li>
             </ul>
         </nav>
-    </div>
 
-    <h2>Saved Courses</h2>
-    <div id="saved-courses"></div>
+        <h2>Saved Courses</h2>
+        <div id="saved-courses"></div>
+    </main>
 
     <script>
-        async function loadSavedCourses() {
+        async function fetchSavedCourses() {
             try {
-                const response = await fetch("/api/saved-courses");
-                const courses = await response.json();
+                console.log("Fetching saved courses..."); // Debugging
+
+                const response = await fetch("http://localhost:5000/api/saved-courses");
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+                const savedCourses = await response.json();
+                console.log("Fetched saved courses:", savedCourses); // Debugging
+
                 const container = document.getElementById("saved-courses");
+                if (!container) {
+                    console.error("Error: Element with ID 'saved-courses' not found.");
+                    return;
+                }
+
                 container.innerHTML = "";
 
-                courses.forEach(course => {
+                if (savedCourses.length === 0) {
+                    container.innerHTML = "<p>No saved courses found.</p>";
+                    return;
+                }
+
+                savedCourses.forEach(course => {
                     const div = document.createElement("div");
                     div.classList.add("course-section");
                     div.innerHTML = `
                         <h2>${course.name}</h2>
                         <p>${course.description}</p>
-                        <button onclick="removeCourse(${course.id})">Remove</button>
+                        <button class="remove-button" data-id="${course.id}">Remove</button>
                     `;
                     container.appendChild(div);
                 });
+
+                // Attach event listeners to remove buttons
+                const removeButtons = document.querySelectorAll(".remove-button");
+                removeButtons.forEach(button => {
+                    button.addEventListener("click", (e) => {
+                        const courseId = e.target.getAttribute("data-id");
+                        console.log(`Remove button clicked for course ID: ${courseId}`);
+                        removeCourse(courseId); // Ensure this removes from the saved courses, not the available courses
+                    });
+                });
+
             } catch (error) {
-                console.error("Error loading saved courses:", error);
+                console.error("Error fetching saved courses:", error);
+                document.getElementById("saved-courses").innerHTML = `<p style="color: red;">Failed to load saved courses.</p>`;
             }
         }
 
-        async function removeCourse(id) {
-            const response = await fetch(`/api/remove-course/${id}`, { method: "DELETE" });
-            if (response.ok) {
-                loadSavedCourses(); // Refresh the courses list
-            } else {
-                console.error("Failed to remove course");
+        async function removeCourse(courseId) {
+            try {
+                // Make sure the endpoint here is for removing saved courses
+                const response = await fetch(`http://localhost:5000/api/remove-course/${courseId}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to remove the course");
+                }
+
+                // After removal, reload the saved courses to reflect the changes
+                fetchSavedCourses();
+            } catch (error) {
+                console.error("Error removing course:", error);
             }
         }
 
-        window.onload = loadSavedCourses;
+        // Load saved courses when the page loads
+        document.addEventListener("DOMContentLoaded", fetchSavedCourses);
     </script>
 
 </body>

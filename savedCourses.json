@@ -1,7 +1,7 @@
 [
   {
-    "id": 2,
-    "name": "Science",
-    "description": "Covers physics, chemistry, and biology."
+    "id": 1,
+    "name": "Mathematics",
+    "description": "Covers algebra, calculus, and statistics."
   }
 ]

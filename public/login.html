@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Final Project - Courses">
+    <title>Courses | Final Project</title>
+    <link rel="stylesheet" type="text/css" href="FinalCSS.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<style>body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    color: #333333;
+    margin: 0;
+    padding: 0;
+}</style>
+
+<body>
+    <div class="login-container">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+        <h2>Register</h2>
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="newUsername">Username:</label>
+                <input type="text" id="newUsername" name="newUsername" required>
+            </div>
+            <div class="form-group">
+                <label for="newPassword">Password:</label>
+                <input type="password" id="newPassword" name="newPassword" required>
+            </div>
+            <div class="form-group">
+                <label for="role">Role:</label>
+                <select id="role" name="role" required>
+                    <option value="student">Student</option>
+                    <option value="teacher">Teacher</option>
+                </select>
+            </div>
+            <button type="submit">Register</button>
+        </form>
+        <div id="registerErrorMessage" class="error-message" style="display: none;"></div>
+    </div>
+
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const errorMessage = document.getElementById('errorMessage');
+        const registerErrorMessage = document.getElementById('registerErrorMessage');
+
+        loginForm.addEventListener('submit', async (event) => {
+            event.preventDefault(); // Prevent form from submitting in the traditional way
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Store the JWT token in localStorage
+                    localStorage.setItem('token', data.token); // Save the token returned from login
+
+                    // Redirect based on role or show a success message
+                    alert(data.message);
+                    window.location.href = '/courses'; // Redirect to the courses page
+                } else {
+                    errorMessage.textContent = data.message;
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                errorMessage.textContent = 'An error occurred during login.';
+                errorMessage.style.display = 'block';
+            }
+        });
+
+
+
+        registerForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const newUsername = document.getElementById('newUsername').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const role = document.getElementById('role').value;
+
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username: newUsername, password: newPassword, role }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(data.message);
+                    // Optionally, redirect or clear the form
+                    window.location.href = '/'; // Redirect to the homepage or login page
+                } else {
+                    registerErrorMessage.textContent = data.message;
+                    registerErrorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                registerErrorMessage.textContent = 'An error occurred during registration.';
+                registerErrorMessage.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

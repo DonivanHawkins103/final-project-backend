@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Add a New Course">
+    <title>Add Course | Final Project</title>
+    <link rel="stylesheet" type="text/css" href="FinalCSS.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1><a href="index.html">Courses For College</a></h1>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="courses.html">Your Courses</a></li>
+            <li><a href="login.html">Log In</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <h2>Add a New Course</h2>
+        <form id="add-course-form">
+            <input type="text" id="course-name" placeholder="Course Name" required>
+            <input type="text" id="course-description" placeholder="Course Description" required>
+            <button type="submit">Add Course</button>
+        </form>
+    </main>
+
+    <script>
+        document.getElementById("add-course-form").addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            const name = document.getElementById("course-name").value.trim();
+            const description = document.getElementById("course-description").value.trim();
+
+            if (!name || !description) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+            try {
+                const response = await fetch("http://localhost:5000/api/add-course", { 
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, description })
+                });
+
+                const responseData = await response.json();
+
+                if (response.ok) {
+                    alert(`${name} added successfully!`);
+                    document.getElementById("add-course-form").reset();
+                } else {
+                    alert("Failed to add course: " + (responseData.message || "Unknown error"));
+                }
+            } catch (error) {
+                console.error("Error adding course:", error);
+                alert("An error occurred while adding the course.");
+            }
+        });
+    </script>
+</body>
+</html>

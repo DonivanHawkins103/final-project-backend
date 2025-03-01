@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1740788486155,
+    "username": "Donivan",
+    "password": "$2b$10$HPV0gc3qj9veiGPck1s9sOTcPKadB0T5bL/CKqGmZ5VxRmwAlAq5e",
+    "role": "student"
+  },
+  {
+    "id": 1740788514453,
+    "username": "Not Donivan",
+    "password": "$2b$10$M8YvQ8WP6uXSQNznopQpV.Ol7R7y.U4Prw.tzmzjKr4ZKgaYsmWfe",
+    "role": "teacher"
+  },
+  {
+    "id": 1740788902230,
+    "username": "TOKEN",
+    "password": "$2b$10$TcL6fV06WtGELVmpfMbrne5887mTKhS.XF9AKR36cTfcpeZp8ytn6",
+    "role": "teacher"
+  }
+]

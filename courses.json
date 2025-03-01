@@ -1,0 +1,27 @@
+[
+  {
+    "id": 1,
+    "name": "Mathematics",
+    "description": "Covers algebra, calculus, and statistics."
+  },
+  {
+    "id": 2,
+    "name": "Science",
+    "description": "Covers physics, chemistry, and biology."
+  },
+  {
+    "id": 3,
+    "name": "History",
+    "description": "Covers world history and modern history."
+  },
+  {
+    "id": 4,
+    "name": "Literature",
+    "description": "Covers poetry, drama, and classical literature."
+  },
+  {
+    "id": 5,
+    "name": "Computer Science",
+    "description": "Covers programming and data structures."
+  }
+]
