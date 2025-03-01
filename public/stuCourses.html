@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Final Project for Group 4">
+    <title>Final Project :: Your Courses</title>
+    <link rel="stylesheet" type="text/css" href="FinalCSS.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1><a href="index.html">Courses For College</a></h1>
+    </header>
+
+    <main>
+        <nav>
+            <ul>
+                <li><a href="stuIndex.html">Home</a></li>
+                <li><a href="stuAbout.html">About</a></li>
+                <li><a href="stuCourses.html">Your Courses</a></li>
+                <li><a href="login.html">Log In</a></li>
+            </ul>
+        </nav>
+
+        <h2>Saved Courses</h2>
+        <div id="saved-courses"></div>
+    </main>
+
+    <script>
+        async function fetchSavedCourses() {
+            try {
+                console.log("Fetching saved courses..."); // Debugging
+
+                const response = await fetch("http://localhost:5000/api/saved-courses");
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+                const savedCourses = await response.json();
+                console.log("Fetched saved courses:", savedCourses); // Debugging
+
+                const container = document.getElementById("saved-courses");
+                if (!container) {
+                    console.error("Error: Element with ID 'saved-courses' not found.");
+                    return;
+                }
+
+                container.innerHTML = "";
+
+                if (savedCourses.length === 0) {
+                    container.innerHTML = "<p>No saved courses found.</p>";
+                    return;
+                }
+
+                savedCourses.forEach(course => {
+                    const div = document.createElement("div");
+                    div.classList.add("course-section");
+                    div.innerHTML = `
+                        <h2>${course.name}</h2>
+                        <p>${course.description}</p>
+                        <button class="remove-button" data-id="${course.id}">Remove</button>
+                    `;
+                    container.appendChild(div);
+                });
+
+                // Attach event listeners to remove buttons
+                const removeButtons = document.querySelectorAll(".remove-button");
+                removeButtons.forEach(button => {
+                    button.addEventListener("click", (e) => {
+                        const courseId = e.target.getAttribute("data-id");
+                        console.log(`Remove button clicked for course ID: ${courseId}`);
+                        removeCourse(courseId); // Ensure this removes from the saved courses, not the available courses
+                    });
+                });
+
+            } catch (error) {
+                console.error("Error fetching saved courses:", error);
+                document.getElementById("saved-courses").innerHTML = `<p style="color: red;">Failed to load saved courses.</p>`;
+            }
+        }
+
+        async function removeCourse(courseId) {
+            try {
+                // Make sure the endpoint here is for removing saved courses
+                const response = await fetch(`http://localhost:5000/api/remove-course/${courseId}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to remove the course");
+                }
+
+                // After removal, reload the saved courses to reflect the changes
+                fetchSavedCourses();
+            } catch (error) {
+                console.error("Error removing course:", error);
+            }
+        }
+
+        // Load saved courses when the page loads
+        document.addEventListener("DOMContentLoaded", fetchSavedCourses);
+    </script>
+
+</body>
+</html>

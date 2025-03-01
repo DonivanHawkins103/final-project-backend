@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Final Project - Courses">
+    <title>Courses | Final Project</title>
+    <link rel="stylesheet" type="text/css" href="FinalCSS.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1><a href="index.html">Courses For College</a></h1>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="stuIndex.html">Home</a></li>
+            <li><a href="stuAbout.html">About</a></li>
+            <li><a href="stuCourses.html">Your Courses</a></li>
+            <li><a href="login.html">Log In</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <h2>Available Courses</h2>
+        <div id="course-list"></div>
+    </main>
+
+    <script>
+        async function fetchCourses() {
+            try {
+                console.log("Fetching courses..."); // Debugging
+
+                const response = await fetch("http://localhost:5000/api/courses");
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+                const courses = await response.json();
+                console.log("Fetched courses:", courses); // Debugging
+
+                const container = document.getElementById("course-list");
+                if (!container) {
+                    console.error("Error: Element with ID 'course-list' not found.");
+                    return;
+                }
+
+                container.innerHTML = "";
+
+                if (courses.length === 0) {
+                    container.innerHTML = "<p>No courses available.</p>";
+                    return;
+                }
+
+                // Display each course
+                courses.forEach(course => {
+                    const div = document.createElement("div");
+                    div.classList.add("course-section");
+                    div.innerHTML = `
+                        <h2>${course.name}</h2>
+                        <p>${course.description}</p>
+                        <button class="save-button" data-id="${course.id}">Save</button>                    `;
+                    container.appendChild(div);
+                });
+
+                // Attach event listeners to the buttons
+                attachButtonListeners();
+
+            } catch (error) {
+                console.error("Error fetching courses:", error);
+                document.getElementById("course-list").innerHTML = `<p style="color: red;">Failed to load courses.</p>`;
+            }
+        }
+
+        // Attach event listeners for Save and Delete buttons
+        function attachButtonListeners() {
+            // Handle Save button clicks
+            const saveButtons = document.querySelectorAll(".save-button");
+            saveButtons.forEach(button => {
+                button.addEventListener("click", async (e) => {
+                    const courseId = e.target.getAttribute("data-id");
+                    console.log(`Saving course with ID: ${courseId}`);
+                    await saveCourse(courseId);
+                });
+            });
+        }
+
+        // Function to save the course
+        async function saveCourse(courseId) {
+            try {
+                const response = await fetch(`http://localhost:5000/api/courses/${courseId}`);
+                const course = await response.json();
+
+                await fetch("http://localhost:5000/api/save-course", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(course)
+                });
+
+                alert("Course saved successfully!");
+            } catch (error) {
+                console.error("Error saving course:", error);
+                alert("Failed to save course.");
+            }
+        }
+
+        // Function to delete the course
+        async function deleteCourse(courseId) {
+            try {
+                const response = await fetch(`http://localhost:5000/api/courses/${courseId}`, {
+                    method: "DELETE"
+                });
+
+                if (response.ok) {
+                    alert("Course deleted successfully!");
+                    fetchCourses(); // Refresh course list
+                } else {
+                    alert("Failed to delete course.");
+                }
+            } catch (error) {
+                console.error("Error deleting course:", error);
+                alert("Failed to delete course.");
+            }
+        }
+
+        // Load courses when the page loads
+        document.addEventListener("DOMContentLoaded", fetchCourses);
+    </script>
+
+</body>
+</html>

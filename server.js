@@ -15,6 +15,8 @@ const SECRET_KEY = 'your_secret_key';
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 app.use(cors({ origin: 'http://localhost:5000' }));
+const users = JSON.parse(fs.readFileSync('users.json', 'utf8'));
+
 
 // Read courses from the file when the server starts
 let courses = readCourses();
@@ -62,7 +64,7 @@ app.get("/api/courses/:id", (req, res) => {
 });
 
 // API to add a new course
-app.post("/api/add-course", verifyTeacherRole, verifyLogin,(req, res) => {
+app.post("/api/add-course",(req, res) => {
     const { name, description } = req.body;
 
     if (!name || !description) {
@@ -84,7 +86,7 @@ app.post("/api/add-course", verifyTeacherRole, verifyLogin,(req, res) => {
 
 
 // API to delete a course
-app.delete("/api/courses/:id", verifyTeacherRole,verifyLogin, (req, res) => {
+app.delete("/api/courses/:id", (req, res) => {
     const courseId = parseInt(req.params.id);
     courses = readCourses(); // Read latest courses
 
@@ -221,38 +223,38 @@ app.post("/api/register", async (req, res) => {
 });
 
 // API endpoint for user login
-app.post("/api/login", async (req, res) => {
-    const { username, password } = req.body;
+// app.post("/api/login", async (req, res) => {
+//     const { username, password } = req.body;
 
-    if (!username || !password) {
-        return res.status(400).json({ message: "Username and password are required" });
-    }
+//     if (!username || !password) {
+//         return res.status(400).json({ message: "Username and password are required" });
+//     }
 
-    const users = readUsersFromFile();  // Read users from file
-    const user = users.find((user) => user.username === username);
+//     const users = readUsersFromFile();  // Read users from file
+//     const user = users.find((user) => user.username === username);
 
-    if (!user) {
-        return res.status(401).json({ message: "Invalid credentials" });
-    }
+//     if (!user) {
+//         return res.status(401).json({ message: "Invalid credentials" });
+//     }
 
-    try {
-        // Compare password with the hashed password
-        const passwordMatch = await bcrypt.compare(password, user.password);
+//     try {
+//         // Compare password with the hashed password
+//         const passwordMatch = await bcrypt.compare(password, user.password);
 
-        if (passwordMatch) {
-            // Generate JWT token containing user ID and role
-            const token = jwt.sign({ userId: user.id, role: user.role }, SECRET_KEY, { expiresIn: '1h' });
+//         if (passwordMatch) {
+//             // Generate JWT token containing user ID and role
+//             const token = jwt.sign({ userId: user.id, role: user.role }, SECRET_KEY, { expiresIn: '1h' });
 
-            // Send the token to the frontend (e.g., store it in localStorage or cookies)
-            res.json({ message: "Login successful", token });
-        } else {
-            return res.status(401).json({ message: "Invalid credentials" });
-        }
-    } catch (error) {
-        console.error("Error logging in:", error);
-        res.status(500).json({ message: "Failed to log in" });
-    }
-});
+//             // Send the token to the frontend (e.g., store it in localStorage or cookies)
+//             res.json({ message: "Login successful", token });
+//         } else {
+//             return res.status(401).json({ message: "Invalid credentials" });
+//         }
+//     } catch (error) {
+//         console.error("Error logging in:", error);
+//         res.status(500).json({ message: "Failed to log in" });
+//     }
+// });
 
 // API endpoint for user logout
 app.post("/api/logout", (req, res) => {
@@ -271,46 +273,73 @@ app.get("/api/profile", (req, res) => {
     res.json({ message: "Profile information" });
 });
 
-function verifyTeacherRole(req, res, next) {
-    const token = req.headers['authorization']?.split(' ')[1]; // Extract token from Authorization header
+app.post('/api/login', async (req, res) => {
+    const { username, password, role } = req.body;
 
-    if (!token) {
-        return res.status(401).json({ message: "No token provided" });
+    // Find the user in the JSON file
+    const user = users.find(user => user.username === username);
+
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
     }
 
-    try {
-        const decoded = jwt.verify(token, SECRET_KEY); // Verify the token
-
-        if (decoded.role !== 'teacher') {
-            return res.status(403).json({ message: "Access denied. Only teachers can access this route." });
-        }
-
-        req.user = decoded; // Add user data to request
-        next(); // Proceed to the next middleware/route handler
-    } catch (error) {
-        console.error("Token verification failed:", error);
-        return res.status(401).json({ message: "Invalid token" });
-    }
-}
-
-
-function verifyLogin(req, res, next) {
-    const token = req.headers['authorization']?.split(' ')[1]; // Extract token from the Authorization header
-
-    if (!token) {
-        return res.status(401).json({ message: "No token provided" });
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+        return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    try {
-        const decoded = jwt.verify(token, SECRET_KEY); // Verify the token
-
-        req.user = decoded; // Add user data to request for further use
-        next(); // Proceed to the next middleware/route handler
-    } catch (error) {
-        console.error("Token verification failed:", error);
-        return res.status(401).json({ message: "Invalid token" });
+    // Check if the selected role matches the user's actual role
+    if (user.role !== role) {
+        return res.status(403).json({ message: `Invalid role selection for ${username}` });
     }
-}
+
+    // Generate JWT Token
+    const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, SECRET_KEY, { expiresIn: '1h' });
+
+    res.json({ message: 'Login successful', token, role: user.role });
+});
+
+// function verifyTeacherRole(req, res, next) {
+//     const token = req.headers['authorization']?.split(' ')[1]; // Extract token from Authorization header
+
+//     if (!token) {
+//         return res.status(401).json({ message: "No token provided" });
+//     }
+
+//     try {
+//         const decoded = jwt.verify(token, SECRET_KEY); // Verify the token
+
+//         if (decoded.role !== 'teacher') {
+//             return res.status(403).json({ message: "Access denied. Only teachers can access this route." });
+//         }
+
+//         req.user = decoded; // Add user data to request
+//         next(); // Proceed to the next middleware/route handler
+//     } catch (error) {
+//         console.error("Token verification failed:", error);
+//         return res.status(401).json({ message: "Invalid token" });
+//     }
+// }
+
+
+// function verifyLogin(req, res, next) {
+//     const token = req.headers['authorization']?.split(' ')[1]; // Extract token from the Authorization header
+
+//     if (!token) {
+//         return res.status(401).json({ message: "No token provided" });
+//     }
+
+//     try {
+//         const decoded = jwt.verify(token, SECRET_KEY); // Verify the token
+
+//         req.user = decoded; // Add user data to request for further use
+//         next(); // Proceed to the next middleware/route handler
+//     } catch (error) {
+//         console.error("Token verification failed:", error);
+//         return res.status(401).json({ message: "Invalid token" });
+//     }
+// }
 
 // Start server
 app.listen(PORT, () => {

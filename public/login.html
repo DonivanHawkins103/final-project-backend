@@ -8,17 +8,44 @@
     <link rel="stylesheet" type="text/css" href="FinalCSS.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
-<style>body {
-    font-family: 'Poppins', sans-serif;
-    background-color: #f0f0f0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    color: #333333;
-    margin: 0;
-    padding: 0;
-}</style>
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        color: #333333;
+        margin: 0;
+        padding: 0;
+    }
+    .button-group {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+    }
+    .button-group button {
+        flex: 1;
+        margin: 5px;
+        padding: 10px;
+        font-size: 16px;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+        color: white;
+    }
+    .student-btn {
+        background-color: #3498db;
+    }
+    .teacher-btn {
+        background-color: #e74c3c;
+    }
+    .error-message {
+        color: red;
+        margin-top: 10px;
+    }
+</style>
 
 <body>
     <div class="login-container">
@@ -32,7 +59,14 @@
                 <label for="password">Password:</label>
                 <input type="password" id="password" name="password" required>
             </div>
-            <button type="submit">Login</button>
+
+            <!-- Hidden input to store role -->
+            <input type="hidden" id="loginRole" name="role" value="student">
+
+            <div class="button-group">
+                <button type="submit" class="student-btn" data-role="student">Student Login</button>
+                <button type="submit" class="teacher-btn" data-role="teacher">Teacher Login</button>
+            </div>
         </form>
         <div id="errorMessage" class="error-message" style="display: none;"></div>
 
@@ -64,9 +98,19 @@
         const errorMessage = document.getElementById('errorMessage');
         const registerErrorMessage = document.getElementById('registerErrorMessage');
 
-        loginForm.addEventListener('submit', async (event) => {
-            event.preventDefault(); // Prevent form from submitting in the traditional way
+        let selectedRole = 'student'; // Default role
 
+        // Handle button clicks for login
+
+        document.querySelectorAll(".button-group button").forEach(button => {
+            button.addEventListener("click", (event) => {
+                event.preventDefault();
+                const selectedRole = event.target.getAttribute("data-role");
+                handleLogin(selectedRole);
+            });
+        });
+
+        async function handleLogin(selectedRole) {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
 
@@ -76,18 +120,21 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ username, password }),
+                    body: JSON.stringify({ username, password, role: selectedRole }),
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Store the JWT token in localStorage
-                    localStorage.setItem('token', data.token); // Save the token returned from login
+                    localStorage.setItem('token', data.token);
 
-                    // Redirect based on role or show a success message
                     alert(data.message);
-                    window.location.href = '/courses'; // Redirect to the courses page
+
+                    if (data.role === 'teacher') {
+                        window.location.href = 'index.html';
+                    } else {
+                        window.location.href = 'stuIndex.html';
+                    }
                 } else {
                     errorMessage.textContent = data.message;
                     errorMessage.style.display = 'block';
@@ -97,8 +144,7 @@
                 errorMessage.textContent = 'An error occurred during login.';
                 errorMessage.style.display = 'block';
             }
-        });
-
+        }
 
 
         registerForm.addEventListener('submit', async (event) => {
@@ -121,8 +167,7 @@
 
                 if (response.ok) {
                     alert(data.message);
-                    // Optionally, redirect or clear the form
-                    window.location.href = '/'; // Redirect to the homepage or login page
+                    window.location.href = '/'; // Redirect to login page
                 } else {
                     registerErrorMessage.textContent = data.message;
                     registerErrorMessage.style.display = 'block';
